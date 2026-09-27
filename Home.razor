@@ -1,0 +1,169 @@
+@page "/"
+
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject EventService EventService
+
+<PageTitle>Dashboard | EventPro</PageTitle>
+
+<div class="dashboard-page">
+
+    <section class="hero-section">
+
+        <div class="hero-content">
+
+            <span class="hero-badge">
+                EVENT MANAGEMENT PLATFORM
+            </span>
+
+            <h1>
+                Manage your events
+                <span>with confidence.</span>
+            </h1>
+
+            <p>
+                Create events, manage registrations and track attendance
+                from one professional dashboard.
+            </p>
+
+            <div class="hero-actions">
+
+                <a href="/events"
+                   class="btn btn-light">
+
+                    Explore Events
+
+                </a>
+
+                <a href="/register"
+                   class="btn btn-outline-light">
+
+                    Register Participant
+
+                </a>
+
+            </div>
+
+        </div>
+
+        <div class="hero-decoration">
+
+            <div class="floating-card">
+
+                <span>Upcoming Event</span>
+
+                <strong>Tech Innovation Summit</strong>
+
+                <small>125 / 250 registered</small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="stats-grid">
+
+        <div class="stat-card">
+
+            <div class="stat-icon purple">
+                ◫
+            </div>
+
+            <div>
+                <span>Total Events</span>
+                <strong>@EventService.GetTotalEvents()</strong>
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <div class="stat-icon blue">
+                👥
+            </div>
+
+            <div>
+                <span>Total Registrations</span>
+                <strong>@EventService.GetTotalRegistrations()</strong>
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                ✓
+            </div>
+
+            <div>
+                <span>Attendance</span>
+                <strong>@EventService.GetTotalAttendance()</strong>
+            </div>
+
+        </div>
+
+        <div class="stat-card">
+
+            <div class="stat-icon orange">
+                ◎
+            </div>
+
+            <div>
+                <span>Total Capacity</span>
+                <strong>@EventService.GetTotalCapacity()</strong>
+            </div>
+
+        </div>
+
+    </section>
+
+    <section class="section-header">
+
+        <div>
+            <span class="section-label">
+                UPCOMING
+            </span>
+
+            <h2>
+                Upcoming Events
+            </h2>
+
+            <p>
+                Discover and manage your upcoming events.
+            </p>
+        </div>
+
+        <a href="/events"
+           class="view-all-link">
+
+            View all events →
+
+        </a>
+
+    </section>
+
+    <section class="event-grid">
+
+        @foreach (var eventItem in UpcomingEvents)
+        {
+            <EventCard Event="eventItem" />
+        }
+
+    </section>
+
+</div>
+
+@code {
+
+    private List<Event> UpcomingEvents = new();
+
+    protected override void OnInitialized()
+    {
+        UpcomingEvents = EventService
+            .GetEvents()
+            .Take(3)
+            .ToList();
+    }
+}

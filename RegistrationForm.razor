@@ -1,0 +1,175 @@
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject EventService EventService
+
+<EditForm Model="@Registration"
+          OnValidSubmit="@HandleSubmit">
+
+    <DataAnnotationsValidator />
+
+    <div class="registration-form">
+
+        <div class="form-group">
+
+            <label for="event">
+                Select Event
+            </label>
+
+            <InputSelect id="event"
+                         @bind-Value="Registration.EventId"
+                         class="form-control">
+
+                <option value="0">
+                    -- Select Event --
+                </option>
+
+                @foreach (var item in Events)
+                {
+                    <option value="@item.Id"
+                            disabled="@item.IsFull">
+
+                        @item.Title
+
+                        @if (item.IsFull)
+                        {
+                            <text> (Full)</text>
+                        }
+
+                    </option>
+                }
+
+            </InputSelect>
+
+            <ValidationMessage For="@(() => Registration.EventId)" />
+
+        </div>
+
+
+        <div class="form-grid">
+
+            <div class="form-group">
+
+                <label for="fullName">
+                    Full Name
+                </label>
+
+                <InputText id="fullName"
+                           @bind-Value="Registration.FullName"
+                           class="form-control"
+                           placeholder="Enter full name" />
+
+                <ValidationMessage For="@(() => Registration.FullName)" />
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <InputText id="email"
+                           @bind-Value="Registration.Email"
+                           class="form-control"
+                           placeholder="name@example.com" />
+
+                <ValidationMessage For="@(() => Registration.Email)" />
+
+            </div>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="phone">
+                Phone Number
+            </label>
+
+            <InputText id="phone"
+                       @bind-Value="Registration.Phone"
+                       class="form-control"
+                       placeholder="+92 300 0000000" />
+
+            <ValidationMessage For="@(() => Registration.Phone)" />
+
+        </div>
+
+
+        @if (!string.IsNullOrWhiteSpace(Message))
+        {
+            <div class="@MessageClass">
+                @Message
+            </div>
+        }
+
+
+        <button type="submit"
+                class="btn btn-primary registration-submit">
+
+            Complete Registration
+
+        </button>
+
+    </div>
+
+</EditForm>
+
+
+@code {
+
+    [Parameter]
+    public int EventId { get; set; }
+
+    [Parameter]
+    public EventCallback OnRegistered { get; set; }
+
+    private Registration Registration { get; set; } = new();
+
+    private List<Event> Events { get; set; } = new();
+
+    private string Message { get; set; } = string.Empty;
+
+    private string MessageClass { get; set; } = "form-message";
+
+
+    protected override void OnInitialized()
+    {
+        Events = EventService.GetEvents();
+
+        Registration.EventId = EventId;
+    }
+
+
+    private async Task HandleSubmit()
+    {
+        Message = string.Empty;
+
+        var result = EventService.RegisterParticipant(Registration);
+
+        if (result)
+        {
+            Message = "Registration completed successfully.";
+
+            MessageClass = "form-message success";
+
+            Registration = new Registration
+            {
+                EventId = EventId
+            };
+
+            await OnRegistered.InvokeAsync();
+        }
+        else
+        {
+            Message =
+                "Registration failed. The event may be full or this email may already be registered.";
+
+            MessageClass = "form-message error";
+        }
+    }
+}

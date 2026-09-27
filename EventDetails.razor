@@ -1,0 +1,252 @@
+@page "/events/{Id:int}"
+
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+@using Microsoft.AspNetCore.Components.Web
+
+@inject EventService EventService
+
+<PageTitle>Event Details | EventPro</PageTitle>
+
+@if (Event is null)
+{
+    <div class="page-container">
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                !
+            </div>
+
+            <h2>
+                Event Not Found
+            </h2>
+
+            <p>
+                The event you're looking for does not exist.
+            </p>
+
+            <a href="/events"
+               class="btn btn-primary">
+                Back to Events
+            </a>
+
+        </div>
+
+    </div>
+}
+else
+{
+    <div class="page-container">
+
+        <a href="/events"
+           class="back-link">
+            ← Back to Events
+        </a>
+
+        <section class="details-hero">
+
+            <img src="@Event.ImageUrl"
+                 alt="@Event.Title" />
+
+            <div class="details-overlay">
+
+                <span class="details-category">
+                    @Event.Category
+                </span>
+
+                <h1>
+                    @Event.Title
+                </h1>
+
+                <p>
+                    @Event.Description
+                </p>
+
+            </div>
+
+        </section>
+
+        <div class="details-grid">
+
+            <div class="details-main">
+
+                <div class="details-card">
+
+                    <h2>
+                        Event Information
+                    </h2>
+
+                    <div class="details-info-grid">
+
+                        <div>
+
+                            <span class="detail-icon">
+                                📅
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    Date
+                                </small>
+
+                                <strong>
+                                    @Event.StartDate.ToString("dddd, dd MMMM yyyy")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <span class="detail-icon">
+                                ◷
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    Time
+                                </small>
+
+                                <strong>
+                                    @Event.StartDate.ToString("hh\\:mm tt")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <span class="detail-icon">
+                                📍
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    Location
+                                </small>
+
+                                <strong>
+                                    @Event.Location
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <span class="detail-icon">
+                                👥
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    Capacity
+                                </small>
+
+                                <strong>
+                                    @Event.Capacity Participants
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <aside class="details-sidebar">
+
+                <div class="registration-card">
+
+                    <span class="sidebar-label">
+                        REGISTRATION
+                    </span>
+
+                    <div class="seat-number">
+                        @Event.AvailableSeats
+                    </div>
+
+                    <p>
+                        seats remaining
+                    </p>
+
+                    <div class="progress large">
+
+                        <div class="progress-bar"
+                             style="width:@GetPercentage()%">
+                        </div>
+
+                    </div>
+
+                    <div class="registration-stat">
+
+                        <span>
+                            Registered
+                        </span>
+
+                        <strong>
+                            @Event.RegisteredCount / @Event.Capacity
+                        </strong>
+
+                    </div>
+
+                    @if (Event.IsFull)
+                    {
+                        <button class="btn btn-secondary w-100"
+                                disabled>
+                            Event Full
+                        </button>
+                    }
+                    else
+                    {
+                        <a href="/register"
+                           class="btn btn-primary w-100">
+                            Register Now
+                        </a>
+                    }
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private Event? Event;
+
+    protected override void OnParametersSet()
+    {
+        Event = EventService.GetEventById(Id);
+    }
+
+    private int GetPercentage()
+    {
+        if (Event is null || Event.Capacity <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Min(
+            100,
+            (int)((double)Event.RegisteredCount / Event.Capacity * 100)
+        );
+    }
+}

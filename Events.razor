@@ -1,0 +1,133 @@
+@page "/events"
+
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject EventService EventService
+
+<PageTitle>Event Details | EventPro</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-heading">
+
+        <div>
+
+            <span class="section-label">
+                EVENT MANAGEMENT
+            </span>
+
+            <h1>
+                All Events
+            </h1>
+
+            <p>
+                Browse, manage and explore all available events.
+            </p>
+
+        </div>
+
+        <a href="/register"
+           class="btn btn-primary">
+
+            + New Registration
+
+        </a>
+
+    </div>
+
+    <div class="filter-bar">
+
+        <div class="search-box">
+
+            <span>⌕</span>
+
+            <input type="text"
+                   placeholder="Search events..."
+                   @bind="SearchText"
+                   @bind:event="oninput" />
+
+        </div>
+
+        <select class="filter-select"
+                @bind="SelectedCategory">
+
+            <option value="All">
+                All Categories
+            </option>
+
+            @foreach (var category in Categories)
+            {
+                <option value="@category">
+                    @category
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    @if (!FilteredEvents.Any())
+    {
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ⌕
+            </div>
+
+            <h3>
+                No events found
+            </h3>
+
+            <p>
+                Try changing your search or category filter.
+            </p>
+
+        </div>
+    }
+    else
+    {
+        <div class="event-grid">
+
+            @foreach (var eventItem in FilteredEvents)
+            {
+                <EventCard Event="eventItem" />
+            }
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<Event> AllEvents = new();
+
+    private string SearchText = string.Empty;
+
+    private string SelectedCategory = "All";
+
+    private IEnumerable<string> Categories =>
+        AllEvents
+            .Select(e => e.Category)
+            .Distinct()
+            .OrderBy(x => x);
+
+    private IEnumerable<Event> FilteredEvents =>
+        AllEvents.Where(e =>
+            (SelectedCategory == "All" ||
+             e.Category == SelectedCategory)
+            &&
+            (string.IsNullOrWhiteSpace(SearchText) ||
+             e.Title.Contains(SearchText,
+                 StringComparison.OrdinalIgnoreCase) ||
+             e.Description.Contains(SearchText,
+                 StringComparison.OrdinalIgnoreCase) ||
+             e.Location.Contains(SearchText,
+                 StringComparison.OrdinalIgnoreCase)));
+
+    protected override void OnInitialized()
+    {
+        AllEvents = EventService.GetEvents();
+    }
+}

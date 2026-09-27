@@ -1,0 +1,169 @@
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+
+@inject EventService EventService
+
+<div class="attendance-panel">
+
+    <div class="attendance-header">
+
+        <div>
+            <h3>Attendance Tracker</h3>
+            <p>Mark registered participants as present.</p>
+        </div>
+
+        <div class="attendance-count">
+
+            <strong>
+                @PresentCount
+            </strong>
+
+            <span>
+                / @Registrations.Count present
+            </span>
+
+        </div>
+
+    </div>
+
+    @if (!Registrations.Any())
+    {
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ✓
+            </div>
+
+            <h4>No registrations found</h4>
+
+            <p>
+                Participants registered for this event will appear here.
+            </p>
+
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+
+            <table class="attendance-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Participant</th>
+                        <th>Email</th>
+                        <th>Registration</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var registration in Registrations)
+                    {
+                        var attendance = Attendance
+                            .FirstOrDefault(a =>
+                                a.RegistrationId == registration.Id);
+
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    @registration.FullName
+                                </strong>
+                            </td>
+
+                            <td>
+                                @registration.Email
+                            </td>
+
+                            <td>
+                                @registration.RegisteredAt
+                                    .ToString("dd MMM yyyy")
+                            </td>
+
+                            <td>
+
+                                @if (attendance?.IsPresent == true)
+                                {
+                                    <span class="badge present">
+                                        Present
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge absent">
+                                        Not Checked In
+                                    </span>
+                                }
+
+                            </td>
+
+                            <td>
+
+                                @if (attendance?.IsPresent == true)
+                                {
+                                    <span class="check-time">
+                                        @attendance.CheckInTime?.ToString("hh:mm tt")
+                                    </span>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success"
+                                            @onclick="() => MarkPresent(registration.Id)">
+
+                                        Check In
+
+                                    </button>
+                                }
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public int EventId { get; set; }
+
+    private List<Registration> Registrations = new();
+
+    private List<Attendance> Attendance = new();
+
+    private int PresentCount =>
+        Attendance.Count(a => a.IsPresent);
+
+    protected override void OnParametersSet()
+    {
+        LoadData();
+    }
+
+    private void LoadData()
+    {
+        Registrations =
+            EventService.GetRegistrations(EventId);
+
+        Attendance =
+            EventService.GetAttendance(EventId);
+    }
+
+    private void MarkPresent(int registrationId)
+    {
+        EventService.MarkAttendance(registrationId);
+
+        LoadData();
+    }
+}

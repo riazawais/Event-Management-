@@ -1,0 +1,73 @@
+@page "/attendance"
+
+@using EventManagementApp.Models
+@using EventManagementApp.Services
+@using Microsoft.AspNetCore.Components.Web
+
+@inject EventService EventService
+
+<PageTitle>Attendance | EventPro</PageTitle>
+
+<div class="page-container">
+
+    <div class="page-heading">
+
+        <div>
+
+            <span class="section-label">
+                EVENT OPERATIONS
+            </span>
+
+            <h1>
+                Attendance Tracker
+            </h1>
+
+            <p>
+                Select an event and manage participant check-ins.
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="attendance-selector">
+
+        <label>
+            Select Event
+        </label>
+
+        <select class="form-control"
+                @bind="SelectedEventId">
+
+            @foreach (var eventItem in Events)
+            {
+                <option value="@eventItem.Id">
+                    @eventItem.Title
+                </option>
+            }
+
+        </select>
+
+    </div>
+
+    @if (SelectedEventId > 0)
+    {
+        <AttendanceTracker EventId="@SelectedEventId" />
+    }
+
+</div>
+
+@code {
+
+    private List<Event> Events = new();
+
+    private int SelectedEventId;
+
+    protected override void OnInitialized()
+    {
+        Events = EventService.GetEvents();
+
+        SelectedEventId =
+            Events.FirstOrDefault()?.Id ?? 0;
+    }
+}

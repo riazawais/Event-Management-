@@ -1,0 +1,170 @@
+@using EventManagementApp.Models
+
+<div class="event-card">
+
+    <div class="event-image-wrapper">
+
+        <img src="@Event.ImageUrl"
+             alt="@Event.Title"
+             class="event-image" />
+
+        <span class="event-category">
+            @Event.Category
+        </span>
+
+        @if (Event.IsFull)
+        {
+            <span class="event-status full">
+                FULL
+            </span>
+        }
+        else if (IsEventOngoing())
+        {
+            <span class="event-status ongoing">
+                LIVE NOW
+            </span>
+        }
+        else
+        {
+            <span class="event-status upcoming">
+                UPCOMING
+            </span>
+        }
+
+    </div>
+
+
+    <div class="event-content">
+
+        <div class="event-date">
+
+            <span class="date-day">
+                @Event.StartDate.ToString("dd")
+            </span>
+
+            <span class="date-month">
+                @Event.StartDate.ToString("MMM")
+            </span>
+
+        </div>
+
+
+        <div class="event-info">
+
+            <h3 class="event-title">
+                @Event.Title
+            </h3>
+
+            <p class="event-description">
+                @Event.Description
+            </p>
+
+
+            <div class="event-meta">
+
+                <div class="event-meta-item">
+
+                    <span class="meta-icon">
+                        📍
+                    </span>
+
+                    <span>
+                        @Event.Location
+                    </span>
+
+                </div>
+
+
+                <div class="event-meta-item">
+
+                    <span class="meta-icon">
+                        🕐
+                    </span>
+
+                    <span>
+                        @Event.StartDate.ToString("hh:mm tt")
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="event-footer">
+
+        <div class="event-capacity">
+
+            <div class="capacity-label">
+
+                <span>
+                    Registration
+                </span>
+
+                <strong>
+                    @Event.RegisteredCount / @Event.Capacity
+                </strong>
+
+            </div>
+
+
+            <div class="progress">
+
+                <div class="progress-bar"
+                     style="width: @GetPercentage()%">
+                </div>
+
+            </div>
+
+
+            <small>
+                @Event.AvailableSeats seats remaining
+            </small>
+
+        </div>
+
+
+        <a href="/events/@Event.Id"
+           class="btn btn-primary">
+
+            View Details
+
+        </a>
+
+    </div>
+
+</div>
+
+
+@code {
+
+    [Parameter]
+    public Event Event { get; set; } = new();
+
+
+    private bool IsEventOngoing()
+    {
+        var now = DateTime.Now;
+
+        return Event.StartDate <= now &&
+               Event.EndDate >= now;
+    }
+
+
+    private int GetPercentage()
+    {
+        if (Event.Capacity <= 0)
+        {
+            return 0;
+        }
+
+        return Math.Min(
+            100,
+            (int)((double)Event.RegisteredCount /
+                  Event.Capacity * 100)
+        );
+    }
+}
